@@ -1,3 +1,12 @@
+function getIcon(main) {
+  if (main === "Clear") return "☀️";
+  if (main === "Clouds") return "☁️";
+  if (main === "Rain") return "🌧️";
+  if (main === "Snow") return "❄️";
+  if (main === "Thunderstorm") return "⛈️";
+  return "🌤️";
+}
+
 function ForecastList({ forecast }) {
   if (!forecast || !forecast.list) return null;
 
@@ -10,6 +19,10 @@ function ForecastList({ forecast }) {
           <div key={index} className="forecast-card">
             <div className="forecast-time">
               {new Date(item.dt_txt).toLocaleString()}
+            </div>
+
+            <div className="forecast-icon">
+              {getIcon(item.weather[0].main)}
             </div>
 
             <div className="forecast-temp">

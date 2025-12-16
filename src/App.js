@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./App.css";
 import SearchBar from "./components/SearchBar";
 import WeatherCard from "./components/WeatherCard";
 import ForecastList from "./components/ForecastList";
@@ -60,21 +61,27 @@ function App() {
   };
 
   return (
-    <div className="container mt-5">
-      <h1 className="text-center mb-4">Weather Forecast App</h1>
+    <div className="container py-5">
+      <div className="app-wrapper">
+        <h1 className="text-center mb-4">Weather Forecast</h1>
 
-      <div className="mb-3">
-        <SearchBar city={city} setCity={setCity} onSearch={getCurrentWeather} />
-        <button className="btn btn-secondary w-100" onClick={getForecast}>
-          5-Day / 3-Hour Forecast
-        </button>
+        <div className="mb-3">
+          <SearchBar
+            city={city}
+            setCity={setCity}
+            onSearch={getCurrentWeather}
+          />
+          <button className="btn btn-secondary w-100" onClick={getForecast}>
+            5-Day / 3-Hour Forecast
+          </button>
+        </div>
+
+        {error && <p className="text-danger text-center">{error}</p>}
+
+        <WeatherCard weather={weather} />
+        <ForecastList forecast={forecast} />
+        <DownloadButton data={forecast} filename="forecast.json" />
       </div>
-
-      {error && <p className="text-danger text-center">{error}</p>}
-
-      <WeatherCard weather={weather} />
-      <ForecastList forecast={forecast} />
-      <DownloadButton data={forecast} filename="forecast.json" />
     </div>
   );
 }

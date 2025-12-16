@@ -2,19 +2,26 @@ function ForecastList({ forecast }) {
   if (!forecast || !forecast.list) return null;
 
   return (
-    <div className="mt-4">
-      <h3 className="text-center mb-3">5-Day / 3-Hour Forecast</h3>
+    <div className="forecast-section mt-5">
+      <h2 className="forecast-title">5-Day / 3-Hour Forecast</h2>
 
-      <div className="row">
+      <div className="forecast-grid">
         {forecast.list.slice(0, 10).map((item, index) => (
-          <div key={index} className="col-12 col-md-6 col-lg-4 mb-3">
-            <div className="card p-3 text-center h-100">
-              <p className="fw-bold">
-                {new Date(item.dt_txt).toLocaleString()}
-              </p>
-              <p>{item.main.temp} °C</p>
-              <p>{item.weather[0].description}</p>
-              <p>{item.wind.speed} m/s</p>
+          <div key={index} className="forecast-card">
+            <div className="forecast-time">
+              {new Date(item.dt_txt).toLocaleString()}
+            </div>
+
+            <div className="forecast-temp">
+              {item.main.temp} °C
+            </div>
+
+            <div className="forecast-desc">
+              {item.weather[0].description}
+            </div>
+
+            <div className="forecast-wind">
+              💨 {item.wind.speed} m/s
             </div>
           </div>
         ))}

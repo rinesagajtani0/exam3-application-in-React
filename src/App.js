@@ -84,10 +84,6 @@ function App() {
     }
   };
 
-  const toggleForecast = () => {
-    setShowForecast(!showForecast);
-  };
-
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       getCurrentWeather();

@@ -14,8 +14,9 @@ function DownloadButton({ data, filename }) {
   };
 
   return (
-    <button className="btn btn-outline-success w-100 mt-3" onClick={download}>
-      Download Forecast (JSON)
+    <button className="download-btn" onClick={download} aria-label="Download forecast data">
+      <span className="btn-icon">📥</span>
+      <span>Download Forecast Data (JSON)</span>
     </button>
   );
 }

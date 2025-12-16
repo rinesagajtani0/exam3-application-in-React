@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import SearchBar from "./components/SearchBar";
@@ -12,6 +12,14 @@ function App() {
   const [forecast, setForecast] = useState(null);
   const [error, setError] = useState("");
   const [dark, setDark] = useState(false);
+
+  useEffect(() => {
+    if (dark) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  }, [dark]);
 
   const getCurrentWeather = async () => {
     if (!city.trim()) return;
@@ -28,7 +36,9 @@ function App() {
       );
 
       const data = await response.json();
+
       if (data.cod !== 200) throw new Error(data.message);
+
       setWeather(data);
     } catch (err) {
       setError(err.message);
@@ -50,7 +60,9 @@ function App() {
       );
 
       const data = await response.json();
+
       if (data.cod !== "200") throw new Error(data.message);
+
       setForecast(data);
     } catch (err) {
       setError(err.message);
@@ -58,17 +70,24 @@ function App() {
   };
 
   return (
-    <div className={`container py-5 ${dark ? "dark" : ""}`}>
+    <div className="container py-5">
       <div className="app-wrapper">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h1 className="m-0">Weather Forecast</h1>
-          <button className="btn btn-outline-secondary" onClick={() => setDark(!dark)}>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => setDark(!dark)}
+          >
             {dark ? "☀️ Light" : "🌙 Dark"}
           </button>
         </div>
 
         <div className="mb-3">
-          <SearchBar city={city} setCity={setCity} onSearch={getCurrentWeather} />
+          <SearchBar
+            city={city}
+            setCity={setCity}
+            onSearch={getCurrentWeather}
+          />
           <button className="btn btn-secondary w-100" onClick={getForecast}>
             5-Day / 3-Hour Forecast
           </button>

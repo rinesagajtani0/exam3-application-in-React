@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import SearchBar from "./components/SearchBar";
 import WeatherCard from "./components/WeatherCard";
 import ForecastList from "./components/ForecastList";
+import DownloadButton from "./components/DownloadButton";
 
 function App() {
   const [city, setCity] = useState("");
@@ -73,6 +74,7 @@ function App() {
 
       <WeatherCard weather={weather} />
       <ForecastList forecast={forecast} />
+      <DownloadButton data={forecast} filename="forecast.json" />
     </div>
   );
 }

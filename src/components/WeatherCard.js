@@ -1,4 +1,16 @@
-function WeatherCard({ weather }) {
+import { useEffect, useState } from "react";
+
+function WeatherCard({ weather, onToggleFavorite, isFavorite }) {
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    if (isFavorite) {
+      setPulse(true);
+      const t = setTimeout(() => setPulse(false), 650);
+      return () => clearTimeout(t);
+    }
+  }, [isFavorite]);
+
   if (!weather) return null;
 
   const temp = Math.round(weather.main.temp);
@@ -16,13 +28,26 @@ function WeatherCard({ weather }) {
           <h2 className="city-name">{weather.name}</h2>
           <p className="country-name">{weather.sys.country}</p>
         </div>
-        <div className="current-date">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
+
+        <div className="weather-card-actions">
+          <button
+            type="button"
+            className={`favorite-toggle ${isFavorite ? "active" : ""} ${pulse ? "pulse" : ""}`}
+            onClick={onToggleFavorite}
+            aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            title={isFavorite ? "Remove favorite" : "Add favorite"}
+          >
+            <span className="favorite-icon">{isFavorite ? "❤️" : "🤍"}</span>
+          </button>
+
+          <div className="current-date">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </div>
         </div>
       </div>
 
@@ -34,9 +59,7 @@ function WeatherCard({ weather }) {
           <span className="temp-value">{temp}</span>
           <span className="temp-unit">°C</span>
         </div>
-        <div className="weather-description">
-          {weather.weather[0].description}
-        </div>
+        <div className="weather-description">{weather.weather[0].description}</div>
       </div>
 
       <div className="weather-details">
@@ -68,7 +91,9 @@ function WeatherCard({ weather }) {
           <div className="detail-icon">🌡️</div>
           <div className="detail-content">
             <div className="detail-label">Min / Max</div>
-            <div className="detail-value">{tempMin}° / {tempMax}°</div>
+            <div className="detail-value">
+              {tempMin}° / {tempMax}°
+            </div>
           </div>
         </div>
 

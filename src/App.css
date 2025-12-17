@@ -273,9 +273,15 @@ body.dark {
 }
 
 .current-date {
-  font-size: 0.95rem;
-  color: #6b7280;
-  text-align: right;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(102, 126, 234, 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  white-space: nowrap;
 }
 
 .weather-card-main {
@@ -611,6 +617,13 @@ body.dark .hour-detail {
   color: #cbd5e1;
 }
 
+body.dark .current-date {
+  color: #cbd5f5;
+  background: rgba(99, 102, 241, 0.18);
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+
 body.dark .detail-item {
   background: rgba(71, 85, 105, 0.3);
 }
@@ -724,3 +737,221 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
+
+.recent-cities,
+.favorite-cities {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.recent-city,
+.favorite-city {
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255,255,255,0.2);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.favorite-city {
+  background: rgba(255,215,0,0.25);
+}
+
+.recent-city:hover,
+.favorite-city:hover {
+  transform: translateY(-2px);
+}
+
+.weather-card-actions{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+}
+
+.favorite-toggle{
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  border:2px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.75);
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+
+body.dark .favorite-toggle{
+  background: rgba(15,23,42,0.35);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.favorite-toggle:hover{ transform: translateY(-1px) scale(1.03); }
+.favorite-toggle.active{ border-color: rgba(239,68,68,0.35); }
+
+.favorite-icon{ font-size: 1.35rem; line-height: 1; }
+
+@keyframes favPulse{
+  0%{ transform: scale(1); }
+  50%{ transform: scale(1.18); }
+  100%{ transform: scale(1); }
+}
+.favorite-toggle.pulse{ animation: favPulse 650ms ease; }
+
+.chips-block{
+  margin: 12px 0 14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.chips-row{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.chips-title{
+  color:#fff;
+  font-weight:700;
+  opacity:.9;
+  font-size:.95rem;
+}
+
+.chips-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.clear-recent-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,255,255,0.28);
+
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+
+  color:#fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+
+  cursor:pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+
+.clear-recent-btn:hover{
+  background: rgba(239,68,68,0.35);
+  transform: translateY(-1px);
+}
+
+.chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.chips-with-clear{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.chip-clear{
+  margin-left: auto;         
+  border-style: dashed;
+  opacity: 0.95;
+}
+
+.chip-clear,
+.chip-clear .chip-main{
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.chip-clear:hover{
+  background: rgba(239,68,68,0.35);
+  border-color: rgba(239,68,68,0.6);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 2px solid rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-weight: 600;
+}
+
+.chip:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.18); }
+
+.chip-recent{
+  cursor:pointer;
+}
+
+.chip-fav{
+  padding: 0;
+  overflow:hidden;
+}
+
+.chip-main {
+  border: none;
+  background: transparent;
+  color: #fff;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip-x {
+  border: none;
+  background: rgba(0,0,0,0.22);
+  color: #fff;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background .2s ease;
+}
+
+.chip-x:hover {
+  background: rgba(239,68,68,0.55);
+}
+
+.chip-recent .chip-x {
+  background: rgba(0,0,0,0.18);
+}
+
+@media (max-width: 576px){
+  .chips{ gap:8px; }
+  .chip-main,
+  .chip-x {
+    padding: 9px 12px;
+    font-size: 0.92rem;
+  }
+  .clear-recent-btn{
+    padding: 7px 12px;
+    font-size: 0.85rem;
+  }
+  .chip, .chip-main{ font-size: .92rem; }
+  .favorite-toggle{ width:40px; height:40px; }
+  .weather-card-actions{ width:100%; justify-content:space-between; }
+  .current-date{ text-align:left; }
+}
+

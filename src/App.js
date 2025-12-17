@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import SearchBar from "./components/SearchBar";
@@ -13,19 +13,38 @@ function App() {
   const [error, setError] = useState("");
   const [dark, setDark] = useState(false);
   const [showForecast, setShowForecast] = useState(false);
-  const [forecastType, setForecastType] = useState("5day"); 
+  const [forecastType, setForecastType] = useState("5day");
   const [loading, setLoading] = useState(false);
 
+  const [recentCities, setRecentCities] = useState([]);
+  const [favoriteCities, setFavoriteCities] = useState([]);
+
+  const didAutoSelectFavorite = useRef(false);
+
   useEffect(() => {
-    if (dark) {
-      document.body.classList.add("dark");
-    } else {
-      document.body.classList.remove("dark");
-    }
+    if (dark) document.body.classList.add("dark");
+    else document.body.classList.remove("dark");
   }, [dark]);
 
-  const getCurrentWeather = async () => {
-    if (!city.trim()) {
+  useEffect(() => {
+    const recent = localStorage.getItem("recentCities");
+    const favorites = localStorage.getItem("favoriteCities");
+    if (recent) setRecentCities(JSON.parse(recent));
+    if (favorites) setFavoriteCities(JSON.parse(favorites));
+  }, []);
+
+  useEffect(() => {
+    if (didAutoSelectFavorite.current) return;
+    if (!weather && !city && favoriteCities.length > 0) {
+      didAutoSelectFavorite.current = true;
+      getCurrentWeather(favoriteCities[0]);
+    }
+  }, [favoriteCities]);
+
+  const getCurrentWeather = async (customCity) => {
+    const searchCity = customCity || city;
+
+    if (!searchCity.trim()) {
       setError("Please enter a city name");
       return;
     }
@@ -38,15 +57,25 @@ function App() {
 
       const response = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-          city.trim()
+          searchCity.trim()
         )}&units=metric&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
       );
 
       const data = await response.json();
-
       if (data.cod !== 200) throw new Error(data.message);
 
       setWeather(data);
+      setCity(data.name);
+
+      setRecentCities((prev) => {
+        const updated = [
+          data.name,
+          ...prev.filter((c) => c !== data.name),
+        ].slice(0, 6);
+
+        localStorage.setItem("recentCities", JSON.stringify(updated));
+        return updated;
+      });
     } catch (err) {
       setError(err.message || "Failed to fetch weather data");
     } finally {
@@ -72,7 +101,6 @@ function App() {
       );
 
       const data = await response.json();
-
       if (data.cod !== "200") throw new Error(data.message);
 
       setForecast(data);
@@ -85,9 +113,39 @@ function App() {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      getCurrentWeather();
-    }
+    if (e.key === "Enter") getCurrentWeather();
+  };
+
+  const toggleFavorite = (cityName) => {
+    if (!cityName) return;
+    setFavoriteCities((prev) => {
+      const updated = prev.includes(cityName)
+        ? prev.filter((c) => c !== cityName)
+        : [cityName, ...prev];
+      localStorage.setItem("favoriteCities", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const removeFavorite = (cityName) => {
+    setFavoriteCities((prev) => {
+      const updated = prev.filter((c) => c !== cityName);
+      localStorage.setItem("favoriteCities", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const removeRecent = (cityName) => {
+    setRecentCities((prev) => {
+      const updated = prev.filter((c) => c !== cityName);
+      localStorage.setItem("recentCities", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const clearAllRecent = () => {
+    setRecentCities([]);
+    localStorage.removeItem("recentCities");
   };
 
   return (
@@ -114,71 +172,141 @@ function App() {
             <SearchBar
               city={city}
               setCity={setCity}
-              onSearch={getCurrentWeather}
+              onSearch={() => getCurrentWeather()}
               onKeyPress={handleKeyPress}
               disabled={loading}
             />
-            
+
+            {(recentCities.length > 0 || favoriteCities.length > 0) && (
+              <div className="chips-block">
+                {favoriteCities.length > 0 && (
+                  <div className="chips-row">
+                    <div className="chips-title">Favorites</div>
+                    <div className="chips">
+                      {favoriteCities.map((c) => (
+                        <div key={c} className="chip chip-fav">
+                          <button
+                            type="button"
+                            className="chip-main"
+                            onClick={() => getCurrentWeather(c)}
+                          >
+                            ❤️ {c}
+                          </button>
+                          <button
+                            type="button"
+                            className="chip-x"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeFavorite(c);
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {recentCities.length > 0 && (
+               <div className="chips-row">
+                <div className="chips-title">Recent</div>
+
+                <div className="chips chips-with-clear">
+                  {recentCities.map((c) => (
+                    <div key={c} className="chip chip-recent">
+                      <button
+                        type="button"
+                        className="chip-main"
+                        onClick={() => getCurrentWeather(c)}
+                      >
+                        📍 {c}
+                      </button>
+                      <button
+                        type="button"
+                        className="chip-x"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeRecent(c);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    className="chip chip-clear"
+                    onClick={clearAllRecent}
+                  >
+                    🧹 Clear all
+                  </button>
+                </div>
+              </div>
+                )}
+              </div>
+            )}
+
             <div className="forecast-controls">
-              <button 
-                className={`forecast-btn ${showForecast && forecastType === '5day' ? 'active' : ''}`}
+              <button
+                className={`forecast-btn ${
+                  showForecast && forecastType === "5day" ? "active" : ""
+                }`}
                 onClick={() => {
-                  if (showForecast && forecastType === '5day') {
+                  if (showForecast && forecastType === "5day")
                     setShowForecast(false);
-                  } else {
+                  else {
                     getForecast();
-                    setForecastType('5day');
+                    setForecastType("5day");
                   }
                 }}
                 disabled={loading}
               >
-                <span className="btn-icon">📅</span>
-                <span>{showForecast && forecastType === '5day' ? 'Hide' : 'Show'} 5-Day Forecast</span>
+                📅 Show 5-Day Forecast
               </button>
-              
-              <button 
-                className={`forecast-btn ${showForecast && forecastType === 'hourly' ? 'active' : ''}`}
+
+              <button
+                className={`forecast-btn ${
+                  showForecast && forecastType === "hourly" ? "active" : ""
+                }`}
                 onClick={() => {
-                  if (showForecast && forecastType === 'hourly') {
+                  if (showForecast && forecastType === "hourly")
                     setShowForecast(false);
-                  } else {
+                  else {
                     getForecast();
-                    setForecastType('hourly');
+                    setForecastType("hourly");
                   }
                 }}
                 disabled={loading}
               >
-                <span className="btn-icon">⏰</span>
-                <span>{showForecast && forecastType === 'hourly' ? 'Hide' : 'Show'} 3-Hour Forecast</span>
+                ⏰ Show 3-Hour Forecast
               </button>
             </div>
           </div>
 
-          {loading && (
-            <div className="loading-container">
-              <div className="spinner"></div>
-              <p>Loading weather data...</p>
-            </div>
-          )}
+          {loading && <p className="text-center mt-4">Loading...</p>}
+          {error && <p className="error-message">{error}</p>}
 
-          {error && (
-            <div className="error-message">
-              <span className="error-icon">⚠️</span>
-              <span>{error}</span>
-            </div>
-          )}
-
-          <WeatherCard weather={weather} />
+          <WeatherCard
+            weather={weather}
+            onToggleFavorite={() =>
+              weather && toggleFavorite(weather.name)
+            }
+            isFavorite={
+              !!(weather && favoriteCities.includes(weather.name))
+            }
+          />
 
           {showForecast && forecast && (
-            <ForecastList 
-              forecast={forecast} 
-              type={forecastType}
-            />
+            <ForecastList forecast={forecast} type={forecastType} />
           )}
 
           {forecast && showForecast && (
-            <DownloadButton data={forecast} filename="weather-forecast.json" />
+            <DownloadButton
+              data={forecast}
+              filename="weather-forecast.json"
+            />
           )}
         </div>
       </div>

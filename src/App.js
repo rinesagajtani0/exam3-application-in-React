@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import SearchBar from "./components/SearchBar";
@@ -33,6 +33,51 @@ function App() {
     if (favorites) setFavoriteCities(JSON.parse(favorites));
   }, []);
 
+  const getCurrentWeather = useCallback(
+    async (customCity) => {
+      const searchCity = customCity || city;
+
+      if (!searchCity.trim()) {
+        setError("Please enter a city name");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError("");
+        setWeather(null);
+        setShowForecast(false);
+
+        const response = await fetch(
+          `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
+            searchCity.trim()
+          )}&units=metric&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
+        );
+
+        const data = await response.json();
+        if (data.cod !== 200) throw new Error(data.message);
+
+        setWeather(data);
+        setCity(data.name);
+
+        setRecentCities((prev) => {
+          const updated = [
+            data.name,
+            ...prev.filter((c) => c !== data.name),
+          ].slice(0, 6);
+
+          localStorage.setItem("recentCities", JSON.stringify(updated));
+          return updated;
+        });
+      } catch (err) {
+        setError(err.message || "Failed to fetch weather data");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [city]
+  );
+
   useEffect(() => {
     if (didAutoSelectFavorite.current) return;
 
@@ -41,48 +86,6 @@ function App() {
       getCurrentWeather(favoriteCities[0]);
     }
   }, [favoriteCities, weather, city, getCurrentWeather]);
-
-  const getCurrentWeather = async (customCity) => {
-    const searchCity = customCity || city;
-
-    if (!searchCity.trim()) {
-      setError("Please enter a city name");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError("");
-      setWeather(null);
-      setShowForecast(false);
-
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-          searchCity.trim()
-        )}&units=metric&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
-      );
-
-      const data = await response.json();
-      if (data.cod !== 200) throw new Error(data.message);
-
-      setWeather(data);
-      setCity(data.name);
-
-      setRecentCities((prev) => {
-        const updated = [
-          data.name,
-          ...prev.filter((c) => c !== data.name),
-        ].slice(0, 6);
-
-        localStorage.setItem("recentCities", JSON.stringify(updated));
-        return updated;
-      });
-    } catch (err) {
-      setError(err.message || "Failed to fetch weather data");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const getForecast = async () => {
     if (!city.trim()) {
@@ -210,41 +213,41 @@ function App() {
                 )}
 
                 {recentCities.length > 0 && (
-               <div className="chips-row">
-                <div className="chips-title">Recent</div>
+                  <div className="chips-row">
+                    <div className="chips-title">Recent</div>
 
-                <div className="chips chips-with-clear">
-                  {recentCities.map((c) => (
-                    <div key={c} className="chip chip-recent">
+                    <div className="chips chips-with-clear">
+                      {recentCities.map((c) => (
+                        <div key={c} className="chip chip-recent">
+                          <button
+                            type="button"
+                            className="chip-main"
+                            onClick={() => getCurrentWeather(c)}
+                          >
+                            📍 {c}
+                          </button>
+                          <button
+                            type="button"
+                            className="chip-x"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeRecent(c);
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+
                       <button
                         type="button"
-                        className="chip-main"
-                        onClick={() => getCurrentWeather(c)}
+                        className="chip chip-clear"
+                        onClick={clearAllRecent}
                       >
-                        📍 {c}
-                      </button>
-                      <button
-                        type="button"
-                        className="chip-x"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeRecent(c);
-                        }}
-                      >
-                        ✕
+                        🧹 Clear all
                       </button>
                     </div>
-                  ))}
-
-                  <button
-                    type="button"
-                    className="chip chip-clear"
-                    onClick={clearAllRecent}
-                  >
-                    🧹 Clear all
-                  </button>
-                </div>
-              </div>
+                  </div>
                 )}
               </div>
             )}

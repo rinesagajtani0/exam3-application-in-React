@@ -35,11 +35,12 @@ function App() {
 
   useEffect(() => {
     if (didAutoSelectFavorite.current) return;
+
     if (!weather && !city && favoriteCities.length > 0) {
       didAutoSelectFavorite.current = true;
       getCurrentWeather(favoriteCities[0]);
     }
-  }, [favoriteCities]);
+  }, [favoriteCities, weather, city, getCurrentWeather]);
 
   const getCurrentWeather = async (customCity) => {
     const searchCity = customCity || city;
